@@ -228,6 +228,15 @@
                     />
 
                     <InputElement
+                        v-if="canUseSolarPassthrough"
+                        :label="$t('powerlimiteradmin.EnableAutoSolarPassthrough')"
+                        :tooltip="$t('powerlimiteradmin.AutoSolarPassthroughHint')"
+                        v-model="powerLimiterConfigList.auto_solar_passthrough_enabled"
+                        type="checkbox"
+                        wide
+                    />
+
+                    <InputElement
                         :label="$t('powerlimiteradmin.BatteryDischargeAtNight')"
                         :tooltip="$t('powerlimiteradmin.BatteryDischargeAtNightHint')"
                         v-model="powerLimiterConfigList.battery_always_use_at_night"
@@ -361,6 +370,33 @@
                         />
                     </template>
 
+                    <template v-if="isAutoSolarPassthroughEnabled">
+                        <InputElement
+                            :label="$t('powerlimiteradmin.AutoSolarPassthroughStartThreshold')"
+                            :tooltip="$t('powerlimiteradmin.AutoSolarPassthroughStartThresholdHint')"
+                            v-model="powerLimiterConfigList.full_solar_passthrough_start_voltage"
+                            placeholder="49"
+                            min="16"
+                            max="66"
+                            postfix="V"
+                            type="number"
+                            step="0.01"
+                            wide
+                        />
+
+                        <InputElement
+                            :label="$t('powerlimiteradmin.AutoSolarPassthroughStopThreshold')"
+                            v-model="powerLimiterConfigList.full_solar_passthrough_stop_voltage"
+                            placeholder="49"
+                            min="16"
+                            max="66"
+                            postfix="V"
+                            type="number"
+                            step="0.01"
+                            wide
+                        />
+                    </template>
+
                     <InputElement
                         :label="$t('powerlimiteradmin.VoltageLoadCorrectionFactor')"
                         v-model="powerLimiterConfigList.voltage_load_correction_factor"
@@ -411,6 +447,19 @@
                         :tooltip="$t('powerlimiteradmin.FullSolarPassthroughStartThresholdHint')"
                         v-model="powerLimiterConfigList.full_solar_passthrough_soc"
                         v-if="isSolarPassthroughEnabled"
+                        placeholder="80"
+                        min="0"
+                        max="100"
+                        postfix="%"
+                        type="number"
+                        wide
+                    />
+
+                    <InputElement
+                        :label="$t('powerlimiteradmin.AutoSolarPassthroughStartThreshold')"
+                        :tooltip="$t('powerlimiteradmin.AutoSolarPassthroughHint')"
+                        v-model="powerLimiterConfigList.full_solar_passthrough_soc"
+                        v-if="isAutoSolarPassthroughEnabled"
                         placeholder="80"
                         min="0"
                         max="100"
@@ -508,6 +557,12 @@ export default defineComponent({
             return cfg.enabled && this.governedInverters.length > 0;
         },
         isSolarPassthroughEnabled(): boolean {
+            return (
+                this.powerLimiterMetaData.charge_controller_enabled &&
+                this.powerLimiterConfigList.auto_solar_passthrough_enabled
+            );
+        },
+        isAutoSolarPassthroughEnabled(): boolean {
             return (
                 this.powerLimiterMetaData.charge_controller_enabled &&
                 this.powerLimiterConfigList.solar_passthrough_enabled

@@ -103,6 +103,7 @@ private:
     bool isBelowStopThreshold() const;
     void calcNextInverterRestart();
     bool isSolarPassThroughEnabled() const;
+    bool isAutoSolarPassThroughEnabled() const;
 };
 
 extern PowerLimiterClass PowerLimiter;

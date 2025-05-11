@@ -273,7 +273,7 @@ void PowerLimiterClass::loop()
 
     auto getFullSolarPassthrough = [this,&config]() -> bool {
         // we only do full solar PT if general solar PT is enabled
-        if (!isSolarPassThroughEnabled()) { return false; }
+        if (!isSolarPassThroughEnabled() && !isAutoSolarPassThroughEnabled()) { return false; }
 
         if (testThreshold(config.PowerLimiter.FullSolarPassThroughSoc,
                         config.PowerLimiter.FullSolarPassThroughStartVoltage,
@@ -335,9 +335,10 @@ void PowerLimiterClass::loop()
                 config.PowerLimiter.VoltageStopThreshold,
                 config.PowerLimiter.BatterySocStopThreshold);
 
-        if (isSolarPassThroughEnabled()) {
-            MessageOutput.printf("[DPL] full solar-passthrough %s, start %.2f V or %u %%, stop %.2f V\r\n",
+        if (isSolarPassThroughEnabled() || isAutoSolarPassThroughEnabled()) {
+            MessageOutput.printf("[DPL] full solar-passthrough %s%s, auto start %.2f V or %u %%, stop %.2f V\r\n",
                     (isFullSolarPassthroughActive()?"active":"dormant"),
+                    (isAutoSolarPassThroughEnabled()?", auto solar-passthrough enabled":""),
                     config.PowerLimiter.FullSolarPassThroughStartVoltage,
                     config.PowerLimiter.FullSolarPassThroughSoc,
                     config.PowerLimiter.FullSolarPassThroughStopVoltage);
@@ -935,6 +936,19 @@ bool PowerLimiterClass::isSolarPassThroughEnabled() const
     if (!config.SolarCharger.Enabled) { return false; }
 
     return config.PowerLimiter.SolarPassThroughEnabled;
+}
+
+bool PowerLimiterClass::isAutoSolarPassThroughEnabled() const
+{
+    auto const& config = Configuration.get();
+
+    // solar passthrough only applies to setups with battery-powered inverters
+    if (!usesBatteryPoweredInverter()) { return false; }
+
+    // solarcharger is needed for solar passthrough
+    if (!config.SolarCharger.Enabled) { return false; }
+
+    return config.PowerLimiter.AutoSolarPassThroughEnabled;
 }
 
 bool PowerLimiterClass::usesBatteryPoweredInverter() const

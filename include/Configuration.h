@@ -157,6 +157,7 @@ struct POWERLIMITER_CONFIG_T {
     bool Enabled;
     bool VerboseLogging;
     bool SolarPassThroughEnabled;
+    bool AutoSolarPassThroughEnabled;
     uint8_t ConductionLosses;
     bool BatteryAlwaysUseAtNight;
     int16_t TargetPowerConsumption;
