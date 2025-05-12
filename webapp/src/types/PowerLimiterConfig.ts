@@ -39,6 +39,7 @@ export interface PowerLimiterConfig {
     auto_solar_passthrough_enabled: boolean;
     conduction_losses: number;
     battery_always_use_at_night: boolean;
+    battery_prioritize_charge: boolean;
     target_power_consumption: number;
     target_power_consumption_hysteresis: number;
     base_load_limit: number;
