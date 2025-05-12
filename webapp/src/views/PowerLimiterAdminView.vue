@@ -219,7 +219,7 @@
                     v-if="governingBatteryPoweredInverters"
                 >
                     <InputElement
-                        v-if="canUseSolarPassthrough"
+                        v-if="canUseSolarPassthrough && !isAutoSolarPassthroughEnabled"
                         :label="$t('powerlimiteradmin.EnableSolarPassthrough')"
                         :tooltip="$t('powerlimiteradmin.SolarPassthroughInfo')"
                         v-model="powerLimiterConfigList.solar_passthrough_enabled"
@@ -228,7 +228,7 @@
                     />
 
                     <InputElement
-                        v-if="canUseSolarPassthrough"
+                        v-if="canUseSolarPassthrough && !isSolarPassthroughEnabled"
                         :label="$t('powerlimiteradmin.EnableAutoSolarPassthrough')"
                         :tooltip="$t('powerlimiteradmin.AutoSolarPassthroughHint')"
                         v-model="powerLimiterConfigList.auto_solar_passthrough_enabled"
@@ -567,13 +567,13 @@ export default defineComponent({
         isSolarPassthroughEnabled(): boolean {
             return (
                 this.powerLimiterMetaData.charge_controller_enabled &&
-                this.powerLimiterConfigList.auto_solar_passthrough_enabled
+                this.powerLimiterConfigList.solar_passthrough_enabled
             );
         },
         isAutoSolarPassthroughEnabled(): boolean {
             return (
                 this.powerLimiterMetaData.charge_controller_enabled &&
-                this.powerLimiterConfigList.solar_passthrough_enabled
+                this.powerLimiterConfigList.auto_solar_passthrough_enabled
             );
         },
         hasPowerMeter(): boolean {
