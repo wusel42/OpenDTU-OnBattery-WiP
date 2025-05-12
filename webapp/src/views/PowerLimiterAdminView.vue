@@ -218,10 +218,16 @@
                     add-space
                     v-if="governingBatteryPoweredInverters"
                 >
+                    <div
+                        class="alert alert-secondary"
+                        role="alert"
+                        v-html="$t('powerlimiteradmin.SolarPassthroughInfo')"
+                    ></div>
+                
                     <InputElement
                         v-if="canUseSolarPassthrough && !isAutoSolarPassthroughEnabled"
                         :label="$t('powerlimiteradmin.EnableSolarPassthrough')"
-                        :tooltip="$t('powerlimiteradmin.SolarPassthroughInfo')"
+                        :tooltip="$t('powerlimiteradmin.SolarPassthroughHint')"
                         v-model="powerLimiterConfigList.solar_passthrough_enabled"
                         type="checkbox"
                         wide
