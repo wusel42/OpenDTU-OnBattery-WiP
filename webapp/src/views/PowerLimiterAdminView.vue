@@ -381,7 +381,7 @@
                     <template v-if="isAutoSolarPassthroughEnabled">
                         <InputElement
                             :label="$t('powerlimiteradmin.AutoSolarPassthroughStartThreshold')"
-                            :tooltip="$t('powerlimiteradmin.AutoSolarPassthroughStartThresholdHint')"
+                            :tooltip="$t('powerlimiteradmin.AutoSolarPassthroughHint')"
                             v-model="powerLimiterConfigList.full_solar_passthrough_start_voltage"
                             placeholder="49"
                             min="16"
