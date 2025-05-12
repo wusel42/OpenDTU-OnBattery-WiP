@@ -695,7 +695,7 @@
         "VerboseLogging": "@:base.VerboseLogging",
         "EnableSolarPassthrough": "Aktiviere Solar-Passthrough",
         "EnableAutoSolarPassthrough": "Aktiviere automatisches 'Solar-Passthrough'",
-        "AutoSolarPassthroughHint": "Der automatische 'Solar-Passthrough'-Modus aktiviert intern den 'Full-Solar-Passthrough'-Modus:  Oberhalb dieses Schwellwertes wird die Leistung der Inverter der Ladereglerausgangsleistung gleichgesetzt (abzüglich Effizienzkorrekturen). Kann verwendet werden um überschüssige Solarleistung an das Netz zu liefern wenn die Batterie (fast) voll ist.",
+        "AutoSolarPassthroughHint": "Der automatische 'Solar-Passthrough'-Modus aktiviert intern den 'Full-Solar-Passthrough'-Modus:  Oberhalb des (Full-Solar-Passthrough) Start-Schwellwertes wird die Leistung der Inverter der Ladereglerausgangsleistung gleichgesetzt (abzüglich Effizienzkorrekturen). Kann verwendet werden um überschüssige Solarleistung an das Netz zu liefern wenn die Batterie (fast) voll ist.",
         "AutoSolarPassthroughStartThreshold": "Start-Schwellwert des automatischen 'Full-Solar-Passthrough'-Modus'",
         "AutoSolarPassthroughStopThreshold": "Stopp-Schwellwert des automatischen 'Full-Solar-Passthrough'-Modus'",
         "ConductionLosses": "Leitungsverluste",

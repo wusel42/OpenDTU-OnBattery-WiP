@@ -590,7 +590,7 @@ void ConfigurationClass::deserializePowerLimiterConfig(JsonObject const& source,
     target.Enabled = source["enabled"] | POWERLIMITER_ENABLED;
     target.VerboseLogging = source["verbose_logging"] | VERBOSE_LOGGING;
     target.SolarPassThroughEnabled = source["solar_passthrough_enabled"] | POWERLIMITER_SOLAR_PASSTHROUGH_ENABLED;
-    target.SolarPassThroughEnabled = source["auto_solar_passthrough_enabled"] | POWERLIMITER_AUTO_SOLAR_PASSTHROUGH_ENABLED;
+    target.AutoSolarPassThroughEnabled = source["auto_solar_passthrough_enabled"] | POWERLIMITER_AUTO_SOLAR_PASSTHROUGH_ENABLED;
     target.ConductionLosses = source["conduction_losses"] | POWERLIMITER_CONDUCTION_LOSSES;
     target.BatteryAlwaysUseAtNight = source["battery_always_use_at_night"] | POWERLIMITER_BATTERY_ALWAYS_USE_AT_NIGHT;
     target.BatteryPrioritizeCharge = source["battery_prioritize_charge"] | POWERLIMITER_BATTERY_PRIORITIZE_CHARGE;
