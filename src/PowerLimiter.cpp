@@ -204,7 +204,7 @@ void PowerLimiterClass::loop()
                 if (_verboseLogging) {
                     MessageOutput.printf("[DPL] AutoSolarPassThrough eabled, stop threshold reached: setting Normal mode\r\n");
                 }
-                PowerLimiterClass::SetMode(Mode::Normal);
+                setMode(Mode::Normal);
             }
         }
         return unconditionalFullSolarPassthrough();
@@ -216,7 +216,7 @@ void PowerLimiterClass::loop()
                 if (_verboseLogging) {
                     MessageOutput.printf("[DPL] AutoSolarPassThrough enabled, start threshold reached: setting UnconditionalFullSolarPassthrough mode\r\n");
                 }
-                PowerLimiterClass::SetMode(Mode::UnconditionalFullSolarPassthrough);
+                setMode(Mode::UnconditionalFullSolarPassthrough);
                 return unconditionalFullSolarPassthrough();
             }
         }
