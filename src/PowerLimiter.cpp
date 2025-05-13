@@ -197,7 +197,29 @@ void PowerLimiterClass::loop()
     // calculation at all after surviving the loop above, which ensures that we
     // have inverter stats more recent than their respective last update command
     if (Mode::UnconditionalFullSolarPassthrough == _mode) {
+        if (isAutoSolarPassThroughEnabled()) {
+            if (testThreshold(config.PowerLimiter.FullSolarPassThroughSoc,
+                    config.PowerLimiter.FullSolarPassThroughStopVoltage,
+                    [](float a, float b) -> bool { return a < b; })) {
+                if (_verboseLogging) {
+                    MessageOutput.printf("[DPL] AutoSolarPassThrough eabled, stop threshold reached: setting Normal mode\r\n");
+                }
+                SetMode(Mode::Normal);
+            }
+        }
         return unconditionalFullSolarPassthrough();
+    } else {
+        if (isAutoSolarPassThroughEnabled()) {
+            if (testThreshold(config.PowerLimiter.FullSolarPassThroughSoc,
+                    config.PowerLimiter.FullSolarPassThroughStartVoltage,
+                    [](float a, float b) -> bool { return a >= b; })) {
+                if (_verboseLogging) {
+                    MessageOutput.printf("[DPL] AutoSolarPassThrough enabled, start threshold reached: setting UnconditionalFullSolarPassthrough mode\r\n");
+                }
+                SetMode(Mode::UnconditionalFullSolarPassthrough);
+                return unconditionalFullSolarPassthrough();
+            }
+        }
     }
 
     // if the power meter is being used, i.e., if its data is valid, we want to
@@ -300,7 +322,7 @@ void PowerLimiterClass::loop()
 
     auto getFullSolarPassthrough = [this,&config]() -> bool {
         // we only do full solar PT if general solar PT is enabled
-        if (!isSolarPassThroughEnabled() && !isAutoSolarPassThroughEnabled()) { return false; }
+        if (!isSolarPassThroughEnabled()) { return false; }
 
         if (testThreshold(config.PowerLimiter.FullSolarPassThroughSoc,
                         config.PowerLimiter.FullSolarPassThroughStartVoltage,
@@ -362,10 +384,9 @@ void PowerLimiterClass::loop()
                 config.PowerLimiter.VoltageStopThreshold,
                 config.PowerLimiter.BatterySocStopThreshold);
 
-        if (isSolarPassThroughEnabled() || isAutoSolarPassThroughEnabled()) {
-            MessageOutput.printf("[DPL] full solar-passthrough %s%s, auto start %.2f V or %u %%, stop %.2f V\r\n",
+        if (isSolarPassThroughEnabled()) {
+            MessageOutput.printf("[DPL] full solar-passthrough %s, auto start %.2f V or %u %%, stop %.2f V\r\n",
                     (isFullSolarPassthroughActive()?"active":"dormant"),
-                    (isAutoSolarPassThroughEnabled()?", auto solar-passthrough enabled":""),
                     config.PowerLimiter.FullSolarPassThroughStartVoltage,
                     config.PowerLimiter.FullSolarPassThroughSoc,
                     config.PowerLimiter.FullSolarPassThroughStopVoltage);
