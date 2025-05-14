@@ -202,12 +202,13 @@ void PowerLimiterClass::loop()
                     config.PowerLimiter.FullSolarPassThroughStopVoltage,
                     [](float a, float b) -> bool { return a < b; })) {
                 if (_verboseLogging) {
-                    MessageOutput.printf("[DPL] AutoSolarPassThrough eabled, stop threshold reached: setting Normal mode\r\n");
+                    MessageOutput.printf("[DPL] AutoSolarPassThrough enabled, stop threshold reached: setting Normal mode\r\n");
                 }
                 setMode(Mode::Normal);
+            } else {
+                return unconditionalFullSolarPassthrough();
             }
         }
-        return unconditionalFullSolarPassthrough();
     } else {
         if (isAutoSolarPassThroughEnabled()) {
             if (testThreshold(config.PowerLimiter.FullSolarPassThroughSoc,
