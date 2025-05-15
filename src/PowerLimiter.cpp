@@ -220,7 +220,6 @@ void PowerLimiterClass::loop()
                     setMode(Mode::Normal);                   
                 }
             }
-            if (solarChargerOutput) {
         }
         return unconditionalFullSolarPassthrough();
     } else {
