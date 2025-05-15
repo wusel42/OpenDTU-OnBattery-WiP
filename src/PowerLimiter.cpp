@@ -205,10 +205,24 @@ void PowerLimiterClass::loop()
                     MessageOutput.printf("[DPL] AutoSolarPassThrough enabled, stop threshold reached: setting Normal mode\r\n");
                 }
                 setMode(Mode::Normal);
+            } else if (!SunPosition.isDayPeriod()) {
+                if (_verboseLogging) {
+                    MessageOutput.printf("[DPL] AutoSolarPassThrough enabled, nighttime reached: setting Normal mode\r\n");
+                }
+                setMode(Mode::Normal);               
             } else {
-                return unconditionalFullSolarPassthrough();
+                auto solarChargerOutput = SolarCharger.getStats()->getOutputPowerWatts();
+
+                if(solarChargerOutput<500) {
+                    if (_verboseLogging) {
+                        MessageOutput.printf("[DPL] AutoSolarPassThrough enabled, lower solar output limit reached: setting Normal mode\r\n");
+                    }
+                    setMode(Mode::Normal);                   
+                }
             }
+            if (solarChargerOutput) {
         }
+        return unconditionalFullSolarPassthrough();
     } else {
         if (isAutoSolarPassThroughEnabled()) {
             if (testThreshold(config.PowerLimiter.FullSolarPassThroughSoc,
