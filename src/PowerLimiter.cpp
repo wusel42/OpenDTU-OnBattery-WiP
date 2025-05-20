@@ -197,7 +197,43 @@ void PowerLimiterClass::loop()
     // calculation at all after surviving the loop above, which ensures that we
     // have inverter stats more recent than their respective last update command
     if (Mode::UnconditionalFullSolarPassthrough == _mode) {
+        if (isAutoSolarPassThroughEnabled()) {
+            if (testThreshold(config.PowerLimiter.FullSolarPassThroughSoc,
+                    config.PowerLimiter.FullSolarPassThroughStopVoltage,
+                    [](float a, float b) -> bool { return a < b; })) {
+                if (_verboseLogging) {
+                    MessageOutput.printf("[DPL] AutoSolarPassThrough enabled, stop threshold reached: setting Normal mode\r\n");
+                }
+                setMode(Mode::Normal);
+            } else if (!SunPosition.isDayPeriod()) {
+                if (_verboseLogging) {
+                    MessageOutput.printf("[DPL] AutoSolarPassThrough enabled, nighttime reached: setting Normal mode\r\n");
+                }
+                setMode(Mode::Normal);               
+            } else {
+                auto solarChargerOutput = SolarCharger.getStats()->getOutputPowerWatts();
+
+                if(solarChargerOutput<500) {
+                    if (_verboseLogging) {
+                        MessageOutput.printf("[DPL] AutoSolarPassThrough enabled, lower solar output limit reached: setting Normal mode\r\n");
+                    }
+                    setMode(Mode::Normal);                   
+                }
+            }
+        }
         return unconditionalFullSolarPassthrough();
+    } else {
+        if (isAutoSolarPassThroughEnabled()) {
+            if (testThreshold(config.PowerLimiter.FullSolarPassThroughSoc,
+                    config.PowerLimiter.FullSolarPassThroughStartVoltage,
+                    [](float a, float b) -> bool { return a >= b; })) {
+                if (_verboseLogging) {
+                    MessageOutput.printf("[DPL] AutoSolarPassThrough enabled, start threshold reached: setting UnconditionalFullSolarPassthrough mode\r\n");
+                }
+                setMode(Mode::UnconditionalFullSolarPassthrough);
+                return unconditionalFullSolarPassthrough();
+            }
+        }
     }
 
     // if the power meter is being used, i.e., if its data is valid, we want to
@@ -242,9 +278,36 @@ void PowerLimiterClass::loop()
 
         auto isDayPeriod = SunPosition.isDayPeriod();
 
-        if (_nighttimeDischarging && isDayPeriod) {
-            _nighttimeDischarging = false;
-            return isStartThresholdReached();
+        // Unify _nighttimeDischarging & _daytimeDischargingLimited:
+        //
+        // if it's day
+        //   if _nighttimeDischarging, turn that off & return isStartThresholdReached()
+        //   if !_daytimeDischargingLimited, turn that on, maybe log and return isStartThresholdReached(),
+        // else
+        //   turn daytimeDischargingLimited off
+        if (isDayPeriod) {
+            if (_nighttimeDischarging) {
+                _nighttimeDischarging = false;
+                if (_verboseLogging) {
+                    MessageOutput.printf("[DPL] it is now daytime, %sstopping nightly discharge because %s\r\n",
+                        isStartThresholdReached()?"not ":"",
+                        isStartThresholdReached()?"battery is charged enough":"charge is prioritized");
+                }
+                return isStartThresholdReached();
+            }
+            if (config.PowerLimiter.BatteryPrioritizeCharge) {
+                if (!_daytimeDischargingLimited) {
+                    _daytimeDischargingLimited = true;
+                    if (_verboseLogging) {
+                        MessageOutput.printf("[DPL] it is now daytime, %sstopping any discharge because %s\r\n",
+                            isStartThresholdReached()?"not ":"",
+                            isStartThresholdReached()?"battery is charged enough":"charge is prioritized");
+                    }
+                    return isStartThresholdReached();
+                }
+            }
+        } else {
+            _daytimeDischargingLimited = false;
         }
 
         if (isStopThresholdReached()) { return false; }
@@ -336,17 +399,20 @@ void PowerLimiterClass::loop()
                 config.PowerLimiter.BatterySocStopThreshold);
 
         if (isSolarPassThroughEnabled()) {
-            MessageOutput.printf("[DPL] full solar-passthrough %s, start %.2f V or %u %%, stop %.2f V\r\n",
+            MessageOutput.printf("[DPL] full solar-passthrough %s, auto start %.2f V or %u %%, stop %.2f V\r\n",
                     (isFullSolarPassthroughActive()?"active":"dormant"),
                     config.PowerLimiter.FullSolarPassThroughStartVoltage,
                     config.PowerLimiter.FullSolarPassThroughSoc,
                     config.PowerLimiter.FullSolarPassThroughStopVoltage);
         }
 
-        MessageOutput.printf("[DPL] start %sreached, stop %sreached, solar-passthrough %sabled, use at night %sabled and %s\r\n",
+        MessageOutput.printf("[DPL] start %sreached, stop %sreached, solar-passthrough %sabled, " \
+            "prioritize battery charge %sabled and %s, use at night %sabled and %s\r\n",
                 (isStartThresholdReached()?"":"NOT "),
                 (isStopThresholdReached()?"":"NOT "),
                 (isSolarPassThroughEnabled()?"en":"dis"),
+                (config.PowerLimiter.BatteryPrioritizeCharge?"en":"dis"),
+                (_daytimeDischargingLimited?"active":"dormant"),
                 (config.PowerLimiter.BatteryAlwaysUseAtNight?"en":"dis"),
                 (_nighttimeDischarging?"active":"dormant"));
 
@@ -935,6 +1001,19 @@ bool PowerLimiterClass::isSolarPassThroughEnabled() const
     if (!config.SolarCharger.Enabled) { return false; }
 
     return config.PowerLimiter.SolarPassThroughEnabled;
+}
+
+bool PowerLimiterClass::isAutoSolarPassThroughEnabled() const
+{
+    auto const& config = Configuration.get();
+
+    // solar passthrough only applies to setups with battery-powered inverters
+    if (!usesBatteryPoweredInverter()) { return false; }
+
+    // solarcharger is needed for solar passthrough
+    if (!config.SolarCharger.Enabled) { return false; }
+
+    return config.PowerLimiter.AutoSolarPassThroughEnabled;
 }
 
 bool PowerLimiterClass::usesBatteryPoweredInverter() const
